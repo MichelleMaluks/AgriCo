@@ -1,5 +1,5 @@
-# Base image with PHP and Apache
-FROM php:8.2-apache
+# Use PHP 8.4 with Apache
+FROM php:8.4-apache
 
 # Enable Apache rewrite (needed for Laravel routes)
 RUN a2enmod rewrite
@@ -24,6 +24,9 @@ COPY . /var/www/html
 
 # Set working directory
 WORKDIR /var/www/html
+
+# Fix Git safe directory warning
+RUN git config --global --add safe.directory /var/www/html
 
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
