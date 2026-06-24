@@ -4,6 +4,8 @@ services:
     env: docker
     plan: free
     dockerfilePath: ./Dockerfile
+    build:
+      cache: false
     envVars:
       - key: APP_ENV
         value: production
