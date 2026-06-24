@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: agri-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        value: base64:Ug5wYDZSyc6AY85hRq91T4fJsBf/Tsyr/r9ulOeIsXg= # copy from your local .env
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: dpg-d8tt5bvavr4c73a1nh9g-a.render.com # replace with actual host from Render dashboard
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: digi_hire
+      - key: DB_USERNAME
+        value: agrico # Render generates this for you
+      - key: DB_PASSWORD
+        value: JfocgeczhfXmOqBLyofggZJuGJqaopmu
