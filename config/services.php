@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'payfast' => [
+        'test_mode' => env('PAYFAST_TEST_MODE', false),
+        'sandbox_url' => 'https://sandbox.payfast.co.za/eng/process',
+        'live_url' => 'https://www.payfast.co.za/eng/process',
+    ],
+
+
 ];

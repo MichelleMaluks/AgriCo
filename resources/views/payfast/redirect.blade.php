@@ -6,14 +6,14 @@
 </head>
 
 <body onload="document.forms['payfastForm'].submit();">
-    <form name="payfastForm" method="post" action="https://www.payfast.co.za/eng/process">
-        @foreach($data as $key => $value)
+    <form action="{{ $payfastUrl }}" method="post" id="payfastForm">
+        @foreach($data as $name => $value)
             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
         @endforeach
-        <noscript>
-            <button type="submit">Click here if not redirected</button>
-        </noscript>
     </form>
+    <script>
+        document.getElementById('payfastForm').submit();
+    </script>
 </body>
 
 </html>

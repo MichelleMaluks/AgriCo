@@ -23,31 +23,83 @@ class PaymentController extends Controller
 
     public function redirect(Order $order)
     {
-        // PayFast merchant details
-        $merchantId = env('PAYFAST_MERCHANT_ID');
-        $merchantKey = env('PAYFAST_MERCHANT_KEY');
-        $returnUrl = route('payment.success', ['order' => $order->id]);
-        $cancelUrl = route('payment.cancel', ['order' => $order->id]);
-        $notifyUrl = route('payment.notify');
+        $provider = $order->product->provider;
 
-        // Build PayFast payload
+        $merchantId = $provider->payfast_merchant_id;
+        $merchantKey = $provider->payfast_merchant_key;
+
+        $payfastUrl = config('services.payfast.test_mode')
+            ? config('services.payfast.sandbox_url')
+            : config('services.payfast.live_url');
+
         $data = [
             'merchant_id' => $merchantId,
             'merchant_key' => $merchantKey,
-            'return_url' => $returnUrl,
-            'cancel_url' => $cancelUrl,
-            'notify_url' => $notifyUrl,
+            'return_url' => route('payment.success', ['order' => $order->id]),
+            'cancel_url' => route('payment.cancel', ['order' => $order->id]),
+            'notify_url' => route('payment.notify'),
             'm_payment_id' => $order->id,
             'amount' => number_format($order->amount, 2, '.', ''),
             'item_name' => 'Service Order #' . $order->id,
         ];
 
-        // Generate signature
-        $signature = md5(http_build_query($data));
-        $data['signature'] = $signature;
+        // ✅ Proper signature generation
+        ksort($data);
+        $signatureString = '';
+        foreach ($data as $key => $value) {
+            $signatureString .= $key . '=' . urlencode($value) . '&';
+        }
+        $signatureString = rtrim($signatureString, '&');
+        $data['signature'] = md5($signatureString);
+
+        return response()->view('payfast.redirect', compact('payfastUrl', 'data'));
+    }
+    public function checkout(Request $request)
+    {
+        $provider = $request->user()->provider;
+
+        $merchantId = $provider->payfast_merchant_id;
+        $merchantKey = $provider->payfast_merchant_key;
+
+        $payfastUrl = config('services.payfast.test_mode')
+            ? config('services.payfast.sandbox_url')
+            : config('services.payfast.live_url');
+
+        $data = [
+            'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey,
+            'amount' => 100.00, // dummy amount
+            'item_name' => 'Sandbox Test Transaction',
+            'return_url' => url('/payment/success'),
+            'cancel_url' => url('/payment/cancel'),
+            'notify_url' => url('/payfast/ipn'),
+            'm_payment_id' => uniqid(), // your order ID
+        ];
 
         // Auto-submit form to PayFast
-        return response()->view('payfast.redirect', compact('data'));
+        return response()->view('payfast.redirect', compact('payfastUrl', 'data'));
+    }
+
+    public function handlePayfastIPN(Request $request)
+    {
+        $data = $request->all();
+
+        if (config('services.payfast.test_mode')) {
+            \Log::info('Sandbox IPN received', $data);
+        }
+
+        $signature = $data['signature'] ?? '';
+        unset($data['signature']);
+        $calculatedSignature = md5(http_build_query($data));
+        if ($signature !== $calculatedSignature) {
+            return response('Invalid signature', 400);
+        }
+
+        if ($data['payment_status'] === 'COMPLETE') {
+            Order::where('id', $data['m_payment_id'])->update(['status' => 'paid']);
+        }
+
+        return response('IPN received', 200);
     }
 
     public function pay($orderId)
