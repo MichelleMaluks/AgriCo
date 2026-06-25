@@ -74,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::apiResource('providers', ProviderController::class)->only(['index', 'show']);
 Route::get('/providers/featured', [ProviderController::class, 'featured']);
-
+Route::get('/api/providers/{id}', [ProviderController::class, 'show']);
 
 // Services
 
