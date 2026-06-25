@@ -30,17 +30,26 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'options' => 'nullable|array',
+            'options.services' => 'nullable|array',
             'price' => 'required|numeric|min:0',
             'images.*' => 'nullable|image|max:2048', // multiple images
         ]);
+        // ✅ Extract category (first selected service)
+        $category = $request->input('options.services.0');
 
+        // ✅ Append category to description
+        $description = $validated['description'] ?? '';
+        if ($category) {
+            $description .= "\n\nCategory: " . $category;
+        }
         // ✅ Create the service record (always linked to provider_id)
         $service = Service::create([
             'provider_id' => $provider->id,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'options' => $validated['options'] ?? [],
+            'options' => [
+                'services' => $request->input('options.services', [])
+            ],
             'price' => $validated['price'],
         ]);
 
