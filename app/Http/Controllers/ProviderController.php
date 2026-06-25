@@ -118,7 +118,7 @@ class ProviderController extends Controller
     {
         $limit = $request->query('limit', 3);
         $providers = Provider::with(['images', 'products'])
-            ->whereHas('products')
+            ->whereHas('services')
             ->inRandomOrder()
             ->take($limit)
             ->get();
