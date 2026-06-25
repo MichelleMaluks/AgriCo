@@ -40,7 +40,7 @@ class ServiceController extends Controller
             'provider_id' => $provider->id,
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'options' => $validated['options'] ?? '{}',
+            'options' => $validated['options'] ?? [],
             'price' => $validated['price'],
         ]);
 
