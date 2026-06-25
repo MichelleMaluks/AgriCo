@@ -30,7 +30,7 @@ class ServiceController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'options.services' => 'nullable|array',
+            'options.services' => 'array',
             'price' => 'required|numeric|min:0',
             'images.*' => 'nullable|image|max:2048', // multiple images
         ]);
