@@ -17,4 +17,7 @@ Route::get('/payfast/redirect/{order}', [PaymentController::class, 'redirect'])-
 Route::post('/payfast/notify', [PaymentController::class, 'notify'])->name('payfast.notify');
 Route::get('/payfast/success/{order}', [PaymentController::class, 'success'])->name('payfast.success');
 Route::get('/payfast/cancel/{order}', [PaymentController::class, 'cancel'])->name('payfast.cancel');
+Route::get('{any}', function () {
+    return view('app'); // or your React entry blade
+})->where('any', '.*');
 
