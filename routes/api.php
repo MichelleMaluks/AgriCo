@@ -56,6 +56,15 @@ Route::middleware('auth:sanctum')->group(function () {
 // routes/api.php
 Route::get('/orders', [OrderController::class, 'index']);
 
+// Providers
+Route::get('/providers/featured', [ProviderController::class, 'featured']); // must come before {id}
+Route::apiResource('providers', ProviderController::class)->only(['index', 'show']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/providers', [ProviderController::class, 'store']);
+    Route::put('/providers/{provider}', [ProviderController::class, 'update']);
+    Route::put('/providers/{id}/payfast', [ProviderController::class, 'updatePayfast']);
+});
 
 // Payments
 
@@ -66,15 +75,6 @@ Route::post('/payment/notify', [PaymentController::class, 'notify'])->name('paym
 Route::put('/providers/{id}/payfast', [ProviderController::class, 'updatePayfast']);
 
 
-// Providers
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/providers', [ProviderController::class, 'store']);
-    Route::put('/providers/{provider}', [ProviderController::class, 'update']);
-});
-Route::apiResource('providers', ProviderController::class)->only(['index', 'show']);
-Route::get('/providers/featured', [ProviderController::class, 'featured']);
-Route::get('/api/providers/{id}', [ProviderController::class, 'show']);
 
 // Services
 
