@@ -19,6 +19,9 @@ class Provider extends Model
         'payfast_merchant_key',
     ];
 
+    protected $casts = [
+        'options' => 'array',
+    ];
     public function user()
     {
         return $this->belongsTo(User::class);
