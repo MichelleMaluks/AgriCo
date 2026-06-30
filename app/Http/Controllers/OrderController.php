@@ -18,7 +18,7 @@ class OrderController extends Controller
         $service = Service::findOrFail($request->service_id);
 
         $order = Order::create([
-            'product_id' => $service->id,
+            'service_id' => $service->id,
             'buyer_id' => auth()->id(),
             'provider_id' => $service->provider_id,
             'total' => $request->amount,
