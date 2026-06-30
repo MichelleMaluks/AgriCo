@@ -12,7 +12,6 @@ class OrderController extends Controller
     {
         $request->validate([
             'service_id' => 'required|exists:services,id',
-            'buyer_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:1',
         ]);
 
