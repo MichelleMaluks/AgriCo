@@ -1,6 +1,5 @@
 <?php
 
-// app/Http/Controllers/ForumController.php
 namespace App\Http\Controllers;
 
 use App\Models\ForumPost;

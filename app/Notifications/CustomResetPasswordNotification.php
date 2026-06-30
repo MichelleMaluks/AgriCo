@@ -9,7 +9,6 @@ class CustomResetPasswordNotification extends ResetPasswordNotification
 {
     public function toMail($notifiable)
     {
-        // Build link directly to React frontend
         $frontendUrl = config('app.frontend_url') . '/reset-password/' . $this->token;
 
         return (new MailMessage)

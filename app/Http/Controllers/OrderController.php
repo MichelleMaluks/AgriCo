@@ -18,7 +18,6 @@ class OrderController extends Controller
 
         $service = Service::findOrFail($request->service_id);
 
-        // Create order record
         $order = Order::create([
             'service_id' => $service->id,
             'buyer_id' => auth()->id(),
@@ -27,7 +26,7 @@ class OrderController extends Controller
             'status' => 'pending',
         ]);
 
-        // Build PayFast payment URL (example)
+
         $paymentUrl = route('payfast.redirect', ['order' => $order->id]);
 
         return response()->json([
@@ -36,7 +35,7 @@ class OrderController extends Controller
             'payment_url' => route('payfast.redirect', $order->id),
         ]);
     }
-    // OrderController.php
+
     public function index(Request $request)
     {
         $orders = Order::with(['product', 'provider'])

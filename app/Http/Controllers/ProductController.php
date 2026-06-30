@@ -18,7 +18,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'price' => 'required|numeric|min:0',   // ✅ exact price required
+            'price' => 'required|numeric|min:0',
             'seller_id' => 'required|exists:users,id',
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048'
         ]);
@@ -49,7 +49,7 @@ class ProductController extends Controller
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
-            'price' => $product->price,   // ✅ exact price
+            'price' => $product->price,
             'images' => $product->images,
             'provider' => $product->provider,
         ]);

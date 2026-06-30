@@ -17,7 +17,7 @@ class SavedProvidersController extends Controller
         return response()->json($saved);
     }
 
-    // Save a provider
+
     public function store(Request $request)
     {
         $request->validate([
@@ -32,7 +32,7 @@ class SavedProvidersController extends Controller
         return response()->json($saved, 201);
     }
 
-    // Remove a saved provider
+
     public function destroy(Request $request, $id)
     {
         SavedProvider::where('user_id', $request->user()->id)

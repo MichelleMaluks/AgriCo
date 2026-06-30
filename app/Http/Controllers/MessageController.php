@@ -7,7 +7,6 @@ use App\Models\Message;
 
 class MessageController extends Controller
 {
-    // Buyer sends message to provider
     public function store(Request $request, $providerId)
     {
         $request->validate([
@@ -24,7 +23,6 @@ class MessageController extends Controller
         return response()->json($message, 201);
     }
 
-    // Provider replies to buyer
     public function reply(Request $request, $buyerId)
     {
         $request->validate([
@@ -42,7 +40,6 @@ class MessageController extends Controller
         return response()->json($message, 201);
     }
 
-    // Buyer views all messages
     public function buyerMessages(Request $request)
     {
         $messages = Message::where('buyer_id', $request->user()->id)
@@ -53,7 +50,6 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
-    // Provider views all messages
     public function providerMessages(Request $request, $providerId)
     {
         $messages = Message::where('provider_id', $providerId)

@@ -21,7 +21,7 @@ class ProviderController extends Controller
             'payfast_merchant_id' => 'nullable|string|max:255',
             'payfast_merchant_key' => 'nullable|string|max:255',
         ]);
-        $user = $request->user(); // logged-in user
+        $user = $request->user();
         if (!$user) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }

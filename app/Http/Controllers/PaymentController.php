@@ -43,7 +43,7 @@ class PaymentController extends Controller
             'item_name' => 'Service Order #' . $order->id,
         ];
 
-        // ✅ Proper signature generation
+
         ksort($data);
         $signatureString = '';
         foreach ($data as $key => $value) {
@@ -68,15 +68,15 @@ class PaymentController extends Controller
         $data = [
             'merchant_id' => $merchantId,
             'merchant_key' => $merchantKey,
-            'amount' => 100.00, // dummy amount
+            'amount' => 100.00,
             'item_name' => 'Sandbox Test Transaction',
             'return_url' => url('/payment/success'),
             'cancel_url' => url('/payment/cancel'),
             'notify_url' => url('/payfast/ipn'),
-            'm_payment_id' => uniqid(), // your order ID
+            'm_payment_id' => uniqid(),
         ];
 
-        // Auto-submit form to PayFast
+
         return response()->view('payfast.redirect', compact('payfastUrl', 'data'));
     }
 
@@ -107,7 +107,7 @@ class PaymentController extends Controller
         $order = Order::with('product.provider')->findOrFail($orderId);
 
         $provider = $order->product->provider->provider;
-        // product belongs to User, then User hasOne Provider
+
 
         if (!$provider || !$provider->payfast_merchant_id || !$provider->payfast_merchant_key) {
             return response()->json(['error' => 'Seller has not configured PayFast'], 400);
@@ -135,13 +135,12 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Order not found'], 404);
         }
 
-        // Step 1: Get provider (seller) PayFast credentials
+
         $provider = $order->product->provider->provider;
         if (!$provider || !$provider->payfast_merchant_key) {
             return response()->json(['error' => 'Seller PayFast key missing'], 400);
         }
 
-        // Step 2: Build signature string
         $data = $request->except('signature');
         ksort($data);
         $signatureString = '';
@@ -150,20 +149,20 @@ class PaymentController extends Controller
         }
         $signatureString = rtrim($signatureString, '&');
 
-        // Step 3: Generate signature with seller’s merchant key
+
         $generatedSignature = md5($signatureString . $provider->payfast_merchant_key);
 
         if ($generatedSignature !== $request->signature) {
             return response()->json(['error' => 'Invalid signature'], 403);
         }
 
-        // Step 4: Optional IP check (PayFast IP ranges)
+
         $validIps = ['196.33.227.224', '196.33.227.225', '196.33.227.226', '196.33.227.227'];
         if (!in_array($request->ip(), $validIps)) {
             return response()->json(['error' => 'Invalid IP'], 403);
         }
 
-        // Step 5: Mark order as paid
+
         $order->status = 'paid';
         $order->save();
 

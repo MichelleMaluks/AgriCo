@@ -8,7 +8,7 @@ use App\Models\Order;
 
 class CartController extends Controller
 {
-    // View cart items
+
     public function index(Request $request)
     {
         $cartItems = Cart::where('user_id', $request->user()->id)
@@ -18,7 +18,7 @@ class CartController extends Controller
         return response()->json($cartItems);
     }
 
-    // Add item to cart
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -39,7 +39,7 @@ class CartController extends Controller
         return response()->json($cartItem, 201);
     }
 
-    // Remove item from cart
+
     public function destroy(Request $request, $id)
     {
         Cart::where('user_id', $request->user()->id)
@@ -49,15 +49,14 @@ class CartController extends Controller
         return response()->json(['message' => 'Item removed']);
     }
 
-    // Checkout (one item at a time)
+
     public function checkout(Request $request, $cartId)
     {
         $cartItem = Cart::where('user_id', $request->user()->id)
             ->where('id', $cartId)
-            ->with('product.provider.provider') // product → user → provider
+            ->with('product.provider.provider')
             ->firstOrFail();
 
-        // Create order
         $order = Order::create([
             'buyer_id' => $request->user()->id,
             'product_id' => $cartItem->product_id,
@@ -66,17 +65,15 @@ class CartController extends Controller
             'status' => 'pending',
         ]);
 
-        // Clear cart item after checkout
+
         $cartItem->delete();
 
-        // Fetch seller's provider profile
         $provider = $cartItem->product->provider->provider;
 
         if (!$provider || !$provider->payfast_merchant_id || !$provider->payfast_merchant_key) {
             return response()->json(['error' => 'Seller has not configured PayFast'], 400);
         }
 
-        // Prepare PayFast data
         $data = [
             'merchant_id' => $provider->payfast_merchant_id,
             'merchant_key' => $provider->payfast_merchant_key,
@@ -86,8 +83,6 @@ class CartController extends Controller
             'amount' => $order->total,
             'item_name' => 'Order #' . $order->id,
         ];
-
-        // Redirect to PayFast
         return view('payfast.redirect', compact('data'));
     }
 }

@@ -12,35 +12,34 @@ class ServiceController extends Controller
     {
         $user = auth()->user();
 
-        // ✅ Ensure provider exists
+
         if (!$user->provider) {
             return response()->json(['message' => 'You must create a provider profile first.'], 403);
         }
 
         $provider = $user->provider;
 
-        // ✅ Block if PayFast credentials are missing
         if (empty($provider->payfast_merchant_id) || empty($provider->payfast_merchant_key)) {
             return response()->json([
                 'message' => 'You must set up PayFast before creating listings.'
             ], 403);
         }
 
-        // ✅ Validate incoming data
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category' => 'required|string',
             'price' => 'required|numeric|min:0',
-            'images.*' => 'nullable|image|max:2048', // multiple images
+            'images.*' => 'nullable|image|max:2048',
         ]);
-        // ✅ Extract category (first selected service)
+
         $category = $request->input('options.services.0');
 
-        // ✅ Append category to description
+
         $description = $validated['description'] ?? '';
         $description .= "\n\nCategory: " . $validated['category'];
-        // ✅ Create the service record (always linked to provider_id)
+
         $service = Service::create([
             'provider_id' => $provider->id,
             'title' => $validated['title'],
@@ -48,7 +47,7 @@ class ServiceController extends Controller
             'price' => $validated['price'],
         ]);
 
-        // ✅ Handle multiple image uploads
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('service_images', 'public');
@@ -56,7 +55,7 @@ class ServiceController extends Controller
             }
         }
 
-        // ✅ Return service with provider + images
+
         return response()->json($service->load(['images', 'provider']), 201);
     }
     public function index()

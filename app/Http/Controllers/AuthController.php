@@ -23,7 +23,6 @@ class AuthController extends Controller
             : response()->json(['message' => 'Unable to send reset link'], 400);
     }
 
-    // Reset password: handle token + new password
     public function resetPassword(Request $request)
     {
         $request->validate([
@@ -64,7 +63,7 @@ class AuthController extends Controller
             'message' => 'Registration successful',
             'user' => $user,
             'token' => $token,
-            'provider_id' => null, // provider profile optional
+            'provider_id' => null,
         ], 201);
     }
 

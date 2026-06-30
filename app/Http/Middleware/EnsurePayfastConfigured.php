@@ -23,7 +23,7 @@ class EnsurePayfastConfigured
 
         $cacheKey = "payfast_valid_{$provider->id}";
         if (!Cache::get($cacheKey)) {
-            // Sandbox validation
+
             $testData = [
                 'merchant_id' => $provider->payfast_merchant_id,
                 'merchant_key' => $provider->payfast_merchant_key,
