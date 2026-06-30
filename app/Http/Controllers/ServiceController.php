@@ -60,10 +60,10 @@ class ServiceController extends Controller
     }
     public function index()
     {
-        $services = Service::with('provider')->get();
-
+        $services = Service::with(['images', 'provider'])->get();
         return response()->json($services);
     }
+
 
     public function show($id)
     {
