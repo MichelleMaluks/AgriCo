@@ -21,7 +21,7 @@ class OrderController extends Controller
             'product_id' => $service->id,
             'buyer_id' => auth()->id(),
             'provider_id' => $service->provider_id,
-            'amount' => $request->amount,
+            'total' => $request->amount,
             'status' => 'pending',
         ]);
 

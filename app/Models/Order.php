@@ -13,7 +13,7 @@ class Order extends Model
         'product_id',
         'buyer_id',
         'provider_id',
-        'amount',
+        'total',
         'status',
     ];
 
