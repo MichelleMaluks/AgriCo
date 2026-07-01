@@ -42,7 +42,7 @@ class PaymentController extends Controller
             'merchant_key' => $merchantKey,
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
-            'notify_url' => route('payfast.notify'),
+            'notify_url' => route('payfast.ipn'),
             'm_payment_id' => $order->id,
             'amount' => number_format($order->total, 2, '.', ''),
             'item_name' => 'Service Order #' . $order->id,
