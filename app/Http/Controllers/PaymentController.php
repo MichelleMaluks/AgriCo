@@ -42,6 +42,9 @@ class PaymentController extends Controller
         $signatureString = collect($data)
             ->map(fn($v, $k) => $k . '=' . urlencode($v))
             ->implode('&');
+        \Log::info('PayFast redirect data', $data);
+        \Log::info('Signature string', ['string' => $signatureString]);
+        \Log::info('Generated signature', ['sig' => md5($signatureString)]);
         $data['signature'] = md5($signatureString);
 
         return view('payfast.redirect', compact('payfastUrl', 'data'));
@@ -85,7 +88,10 @@ class PaymentController extends Controller
             ->implode('&');
 
         $generatedSignature = md5($signatureString . config('services.payfast.merchant_key'));
-
+        \Log::info('IPN data received', $data);
+        \Log::info('IPN signature string', ['string' => $signatureString]);
+        \Log::info('Generated IPN signature', ['sig' => $generatedSignature]);
+        \Log::info('Submitted signature', ['sig' => $request->signature]);
         if ($generatedSignature !== $request->signature) {
             return response('Invalid signature', 400);
         }
