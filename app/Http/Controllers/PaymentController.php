@@ -40,6 +40,7 @@ class PaymentController extends Controller
 
         ksort($data);
         $signatureString = collect($data)
+            ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
 
@@ -72,6 +73,7 @@ class PaymentController extends Controller
 
         ksort($data);
         $signatureString = collect($data)
+            ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
         $data['signature'] = md5($signatureString);
@@ -125,6 +127,7 @@ class PaymentController extends Controller
 
         ksort($data);
         $signatureString = collect($data)
+            ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
         $data['signature'] = md5($signatureString);
