@@ -29,7 +29,7 @@ class PaymentController extends Controller
 
         $data = [
             'merchant_id' => $merchantId,
-            'merchant_key' => $merchantKey,
+            'merchant_key' => $merchantKey, // required in form
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
@@ -39,15 +39,19 @@ class PaymentController extends Controller
         ];
 
         ksort($data);
-        $signatureString = collect($data)
+
+        // Exclude merchant_key from signature string
+        $signatureData = collect($data)
             ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
 
+        $data['signature'] = md5($signatureData);
+
+        // Log for debugging
         \Log::info('PayFast redirect data', $data);
-        \Log::info('Signature string', ['string' => $signatureString]);
-        \Log::info('Generated signature', ['sig' => md5($signatureString)]);
-        $data['signature'] = md5($signatureString);
+        \Log::info('Signature string', ['string' => $signatureData]);
+        \Log::info('Generated signature', ['sig' => $data['signature']]);
 
         return view('payfast.redirect', compact('payfastUrl', 'data'));
     }
@@ -72,11 +76,17 @@ class PaymentController extends Controller
         ];
 
         ksort($data);
-        $signatureString = collect($data)
+
+        $signatureData = collect($data)
             ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
-        $data['signature'] = md5($signatureString);
+
+        $data['signature'] = md5($signatureData);
+
+        \Log::info('PayFast checkout data', $data);
+        \Log::info('Signature string', ['string' => $signatureData]);
+        \Log::info('Generated signature', ['sig' => $data['signature']]);
 
         return view('payfast.redirect', compact('payfastUrl', 'data'));
     }
@@ -92,11 +102,11 @@ class PaymentController extends Controller
 
         $generatedSignature = md5($signatureString . trim(config('services.payfast.merchant_key')));
 
-
         \Log::info('IPN data received', $data);
         \Log::info('IPN signature string', ['string' => $signatureString]);
         \Log::info('Generated IPN signature', ['sig' => $generatedSignature]);
         \Log::info('Submitted signature', ['sig' => $request->signature]);
+
         if ($generatedSignature !== $request->signature) {
             return response('Invalid signature', 400);
         }
@@ -126,11 +136,17 @@ class PaymentController extends Controller
         ];
 
         ksort($data);
-        $signatureString = collect($data)
+
+        $signatureData = collect($data)
             ->reject(fn($v, $k) => $k === 'merchant_key')
             ->map(fn($v, $k) => $k . '=' . rawurlencode($v))
             ->implode('&');
-        $data['signature'] = md5($signatureString);
+
+        $data['signature'] = md5($signatureData);
+
+        \Log::info('PayFast pay data', $data);
+        \Log::info('Signature string', ['string' => $signatureData]);
+        \Log::info('Generated signature', ['sig' => $data['signature']]);
 
         return view('payfast.redirect', compact('data'));
     }
@@ -152,6 +168,11 @@ class PaymentController extends Controller
             ->implode('&');
 
         $generatedSignature = md5($signatureString . trim(config('services.payfast.merchant_key')));
+
+        \Log::info('Notify data received', $data);
+        \Log::info('Notify signature string', ['string' => $signatureString]);
+        \Log::info('Generated notify signature', ['sig' => $generatedSignature]);
+        \Log::info('Submitted signature', ['sig' => $request->signature]);
 
         if ($generatedSignature !== $request->signature) {
             return response()->json(['error' => 'Invalid signature'], 403);
