@@ -23,7 +23,7 @@ class PaymentController extends Controller
 
     public function redirect(Order $order)
     {
-        // Use direct provider_id from orders table
+
         $provider = $order->provider ?? $order->service->provider ?? null;
 
         if (!$provider) {
@@ -116,9 +116,9 @@ class PaymentController extends Controller
         $data = [
             'merchant_id' => $provider->payfast_merchant_id,
             'merchant_key' => $provider->payfast_merchant_key,
-            'return_url' => route('payment.success', $order->id),
-            'cancel_url' => route('payment.cancel', $order->id),
-            'notify_url' => route('payment.notify'),
+            'return_url' => route('payfast.success', $order->id),
+            'cancel_url' => route('payfast.cancel', $order->id),
+            'notify_url' => route('payfast.ipn'),
             'amount' => $order->total,
             'item_name' => 'Order #' . $order->id,
         ];
