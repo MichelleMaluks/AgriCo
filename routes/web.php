@@ -17,6 +17,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 Route::get('/payfast/redirect/{order}', [PaymentController::class, 'redirect'])->name('payfast.redirect');
 Route::get('/payfast/success/{order}', [PaymentController::class, 'success'])->name('payfast.success');
 Route::get('/payfast/cancel/{order}', [PaymentController::class, 'cancel'])->name('payfast.cancel');
-Route::post('/payfast/ipn', [PaymentController::class, 'handlePayfastIPN'])->name('payfast.ipn');
+Route::post('/payfast/ipn', [PaymentController::class, 'notify'])->name('payfast.ipn');
 
 Route::get('{any}', fn() => view('app'))->where('any', '.*');
