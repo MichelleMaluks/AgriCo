@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\Product;
 
 class PaymentController extends Controller
 {
-
     public function success(Order $order)
     {
         $order->update(['status' => 'paid']);
@@ -23,23 +21,18 @@ class PaymentController extends Controller
 
     public function redirect(Order $order)
     {
-
         $provider = $order->provider ?? $order->service->provider ?? null;
-
         if (!$provider) {
             return response()->json(['error' => 'Provider not found'], 404);
         }
 
         $merchantId = config('services.payfast.merchant_id');
-        $merchantKey = config('services.payfast.merchant_key');
-
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
             : config('services.payfast.live_url');
 
         $data = [
             'merchant_id' => $merchantId,
-            'merchant_key' => $merchantKey,
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
@@ -56,19 +49,16 @@ class PaymentController extends Controller
 
         return view('payfast.redirect', compact('payfastUrl', 'data'));
     }
+
     public function checkout(Request $request)
     {
-        $provider = $request->user()->provider;
         $merchantId = config('services.payfast.merchant_id');
-        $merchantKey = config('services.payfast.merchant_key');
-
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
             : config('services.payfast.live_url');
 
         $data = [
             'merchant_id' => $merchantId,
-            'merchant_key' => $merchantKey,
             'amount' => 100.00,
             'item_name' => 'Sandbox Test Transaction',
             'return_url' => url('/payfast/success'),
@@ -77,26 +67,31 @@ class PaymentController extends Controller
             'm_payment_id' => uniqid(),
         ];
 
+        ksort($data);
+        $signatureString = collect($data)
+            ->map(fn($v, $k) => $k . '=' . urlencode($v))
+            ->implode('&');
+        $data['signature'] = md5($signatureString);
 
-        return response()->view('payfast.redirect', compact('payfastUrl', 'data'));
+        return view('payfast.redirect', compact('payfastUrl', 'data'));
     }
 
     public function handlePayfastIPN(Request $request)
     {
-        $data = $request->all();
+        $data = $request->except('signature');
+        ksort($data);
 
-        if (config('services.payfast.test_mode')) {
-            \Log::info('Sandbox IPN received', $data);
-        }
+        $signatureString = collect($data)
+            ->map(fn($v, $k) => $k . '=' . urlencode($v))
+            ->implode('&');
 
-        $signature = $data['signature'] ?? '';
-        unset($data['signature']);
-        $calculatedSignature = md5(http_build_query($data));
-        if ($signature !== $calculatedSignature) {
+        $generatedSignature = md5($signatureString . config('services.payfast.merchant_key'));
+
+        if ($generatedSignature !== $request->signature) {
             return response('Invalid signature', 400);
         }
 
-        if ($data['payment_status'] === 'COMPLETE') {
+        if (($data['payment_status'] ?? '') === 'COMPLETE') {
             Order::where('id', $data['m_payment_id'])->update(['status' => 'paid']);
         }
 
@@ -106,23 +101,27 @@ class PaymentController extends Controller
     public function pay($orderId)
     {
         $order = Order::with(['service.provider'])->findOrFail($orderId);
-        $provider = $order->provider ?? $order->service->provider ?? null;
-
         $merchantId = config('services.payfast.merchant_id');
-        $merchantKey = config('services.payfast.merchant_key');
 
         $data = [
             'merchant_id' => $merchantId,
-            'merchant_key' => $merchantKey,
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
             'amount' => $order->total,
             'item_name' => 'Order #' . $order->id,
+            'm_payment_id' => $order->id,
         ];
+
+        ksort($data);
+        $signatureString = collect($data)
+            ->map(fn($v, $k) => $k . '=' . urlencode($v))
+            ->implode('&');
+        $data['signature'] = md5($signatureString);
 
         return view('payfast.redirect', compact('data'));
     }
+
     public function notify(Request $request)
     {
         $orderId = str_replace('Order #', '', $request->item_name);
@@ -132,19 +131,14 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Order not found'], 404);
         }
 
-        $provider = $order->provider ?? $order->service->provider ?? null;
-        $merchantKey = config('services.payfast.merchant_key');
-        if (!$provider || !$merchantKey) {
-            return response()->json(['error' => 'Seller PayFast key missing'], 400);
-        }
-
         $data = $request->except('signature');
         ksort($data);
+
         $signatureString = collect($data)
             ->map(fn($v, $k) => $k . '=' . urlencode($v))
             ->implode('&');
 
-        $generatedSignature = md5($signatureString . $provider->payfast_merchant_key);
+        $generatedSignature = md5($signatureString . config('services.payfast.merchant_key'));
 
         if ($generatedSignature !== $request->signature) {
             return response()->json(['error' => 'Invalid signature'], 403);
