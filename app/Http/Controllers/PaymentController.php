@@ -30,8 +30,8 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Provider not found'], 404);
         }
 
-        $merchantId = $provider->payfast_merchant_id;
-        $merchantKey = $provider->payfast_merchant_key;
+        $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
 
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
@@ -59,9 +59,8 @@ class PaymentController extends Controller
     public function checkout(Request $request)
     {
         $provider = $request->user()->provider;
-
-        $merchantId = $provider->payfast_merchant_id;
-        $merchantKey = $provider->payfast_merchant_key;
+        $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
 
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
@@ -109,13 +108,12 @@ class PaymentController extends Controller
         $order = Order::with(['service.provider'])->findOrFail($orderId);
         $provider = $order->provider ?? $order->service->provider ?? null;
 
-        if (!$provider || !$provider->payfast_merchant_id || !$provider->payfast_merchant_key) {
-            return response()->json(['error' => 'Seller has not configured PayFast'], 400);
-        }
+        $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
 
         $data = [
-            'merchant_id' => $provider->payfast_merchant_id,
-            'merchant_key' => $provider->payfast_merchant_key,
+            'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey,
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
@@ -135,7 +133,8 @@ class PaymentController extends Controller
         }
 
         $provider = $order->provider ?? $order->service->provider ?? null;
-        if (!$provider || !$provider->payfast_merchant_key) {
+        $merchantKey = config('services.payfast.merchant_key');
+        if (!$provider || !$merchantKey) {
             return response()->json(['error' => 'Seller PayFast key missing'], 400);
         }
 
