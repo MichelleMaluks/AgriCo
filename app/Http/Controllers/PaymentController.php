@@ -159,7 +159,7 @@ class PaymentController extends Controller
         if (!$order) {
             return response()->json(['error' => 'Order not found'], 404);
         }
-
+        \Log::info('Raw IPN request', $request->all());
         $data = $request->except('signature');
         ksort($data);
 
