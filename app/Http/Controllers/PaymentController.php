@@ -40,9 +40,9 @@ class PaymentController extends Controller
         $data = [
             'merchant_id' => $merchantId,
             'merchant_key' => $merchantKey,
-            'return_url' => route('payment.success', $order->id),
-            'cancel_url' => route('payment.cancel', $order->id),
-            'notify_url' => route('payment.notify'),
+            'return_url' => route('payfast.success', $order->id),
+            'cancel_url' => route('payfast.cancel', $order->id),
+            'notify_url' => route('payfast.notify'),
             'm_payment_id' => $order->id,
             'amount' => number_format($order->total, 2, '.', ''),
             'item_name' => 'Service Order #' . $order->id,
@@ -72,8 +72,8 @@ class PaymentController extends Controller
             'merchant_key' => $merchantKey,
             'amount' => 100.00,
             'item_name' => 'Sandbox Test Transaction',
-            'return_url' => url('/payment/success'),
-            'cancel_url' => url('/payment/cancel'),
+            'return_url' => url('/payfast/success'),
+            'cancel_url' => url('/payfast/cancel'),
             'notify_url' => url('/payfast/ipn'),
             'm_payment_id' => uniqid(),
         ];
