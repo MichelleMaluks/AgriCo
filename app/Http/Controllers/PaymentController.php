@@ -21,18 +21,15 @@ class PaymentController extends Controller
 
     public function redirect(Order $order)
     {
-        $provider = $order->provider ?? $order->service->provider ?? null;
-        if (!$provider) {
-            return response()->json(['error' => 'Provider not found'], 404);
-        }
-
         $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
             : config('services.payfast.live_url');
 
         $data = [
             'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey, // must be included in form
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
@@ -53,12 +50,14 @@ class PaymentController extends Controller
     public function checkout(Request $request)
     {
         $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
         $payfastUrl = config('services.payfast.test_mode')
             ? config('services.payfast.sandbox_url')
             : config('services.payfast.live_url');
 
         $data = [
             'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey,
             'amount' => 100.00,
             'item_name' => 'Sandbox Test Transaction',
             'return_url' => url('/payfast/success'),
@@ -102,13 +101,15 @@ class PaymentController extends Controller
     {
         $order = Order::with(['service.provider'])->findOrFail($orderId);
         $merchantId = config('services.payfast.merchant_id');
+        $merchantKey = config('services.payfast.merchant_key');
 
         $data = [
             'merchant_id' => $merchantId,
+            'merchant_key' => $merchantKey,
             'return_url' => route('payfast.success', $order->id),
             'cancel_url' => route('payfast.cancel', $order->id),
             'notify_url' => route('payfast.ipn'),
-            'amount' => $order->total,
+            'amount' => number_format($order->total, 2, '.', ''),
             'item_name' => 'Order #' . $order->id,
             'm_payment_id' => $order->id,
         ];
