@@ -93,6 +93,7 @@ class PaymentController extends Controller
 
     public function handlePayfastIPN(Request $request)
     {
+        \Log::info('Raw IPN request', $request->all());
         $data = $request->except('signature');
         ksort($data);
 
