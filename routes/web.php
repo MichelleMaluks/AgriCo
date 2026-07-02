@@ -19,4 +19,4 @@ Route::get('/payfast/success/{order}', [PaymentController::class, 'success'])->n
 Route::get('/payfast/cancel/{order}', [PaymentController::class, 'cancel'])->name('payfast.cancel');
 Route::post('/payfast/ipn', [PaymentController::class, 'notify'])->name('payfast.ipn');
 
-Route::get('{any}', fn() => view('app'))->where('any', '.*');
+Route::get('{any}', fn() => view('welcome'))->where('any', '.*');

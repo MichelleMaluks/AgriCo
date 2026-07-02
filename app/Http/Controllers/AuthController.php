@@ -57,11 +57,18 @@ class AuthController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
+            'role' => 'buyer',
         ]);
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([
             'message' => 'Registration successful',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'provider_id' => $user->provider->id ?? null,
+            ],
             'token' => $token,
             'provider_id' => null,
         ], 201);
@@ -89,7 +96,13 @@ class AuthController extends Controller
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'provider_id' => $user->provider->id ?? null,
+            ],
             'token' => $token,
         ], 200);
     }
